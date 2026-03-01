@@ -1,0 +1,10 @@
+{
+  "project": "devops-sandbox",
+  "environment": "local",
+  "hostname": "{{ ansible_hostname }}",
+  "ip": "{{ ansible_host }}",
+  "configured_at": "{{ ansible_date_time.iso8601 }}",
+  "s3_bucket": "{{ s3_bucket | default('') }}",
+  "dynamodb_table": "{{ dynamodb_table | default('') }}",
+  "instance_id": "{{ ec2_instance_id | default('') }}"
+}

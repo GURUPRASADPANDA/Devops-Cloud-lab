@@ -1,0 +1,44 @@
+---
+- name: Update package manager cache
+  ansible.builtin.package:
+    update_cache: yes
+  when: ansible_os_family in ["Debian", "RedHat"]
+
+- name: Install common packages
+  ansible.builtin.package:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Set system timezone
+  community.general.timezone:
+    name: "{{ system_timezone }}"
+  ignore_errors: yes
+
+- name: Configure sysctl for performance
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  loop:
+    - { key: "net.core.somaxconn", value: "65535" }
+    - { key: "net.ipv4.tcp_max_syn_backlog", value: "65535" }
+  ignore_errors: yes
+
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /opt/sandbox
+    - /opt/sandbox/logs
+    - /opt/sandbox/data
+    - /var/log/sandbox
+
+- name: Deploy sandbox info file
+  ansible.builtin.template:
+    src: sandbox_info.j2
+    dest: /opt/sandbox/info.json
+    mode: "0644"

@@ -1,0 +1,129 @@
+version: "3.9"
+
+networks:
+  sandbox-net:
+    driver: bridge
+
+volumes:
+  localstack-data:
+  terraform-state:
+
+services:
+  localstack:
+    image: localstack/localstack:3.4
+    container_name: sandbox-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,ec2,iam,dynamodb,sts,vpc
+      - DEBUG=${LOCALSTACK_DEBUG:-0}
+      - DATA_DIR=/var/lib/localstack
+      - PERSISTENCE=1
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sandbox-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  terraform:
+    build:
+      context: ./docker/terraform
+      dockerfile: Dockerfile
+    container_name: sandbox-terraform
+    volumes:
+      - ./terraform:/workspace/terraform
+      - terraform-state:/workspace/state
+      - ./scripts:/workspace/scripts
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - TF_VAR_localstack_endpoint=http://localstack:4566
+    networks:
+      - sandbox-net
+    depends_on:
+      localstack:
+        condition: service_healthy
+    command: ["tail", "-f", "/dev/null"]
+
+  ansible:
+    build:
+      context: ./docker/ansible
+      dockerfile: Dockerfile
+    container_name: sandbox-ansible
+    volumes:
+      - ./ansible:/workspace/ansible
+      - ./terraform:/workspace/terraform
+      - terraform-state:/workspace/state
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+    networks:
+      - sandbox-net
+    depends_on:
+      - terraform
+    command: ["tail", "-f", "/dev/null"]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sandbox-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - terraform-state:/workspace/state:ro
+    networks:
+      - sandbox-net
+    depends_on:
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: sandbox-ui
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    networks:
+      - sandbox-net
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: sandbox-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - sandbox-net
+    depends_on:
+      - ui
+      - backend

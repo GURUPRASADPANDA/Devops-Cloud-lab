@@ -1,0 +1,14 @@
+---
+system_timezone: UTC
+
+common_packages:
+  - curl
+  - wget
+  - git
+  - vim
+  - htop
+  - net-tools
+  - unzip
+  - jq
+  - python3
+  - python3-pip

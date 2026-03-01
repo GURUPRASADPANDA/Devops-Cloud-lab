@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DevOps Sandbox – EC2 Instance</title>
+  <style>
+    body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 2rem; }
+    h1 { color: #58a6ff; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+    .label { color: #8b949e; font-size: 0.85rem; }
+    .value { color: #3fb950; font-weight: bold; }
+    .badge { display: inline-block; background: #1f6feb; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>🚀 DevOps Sandbox</h1>
+  <span class="badge">LocalStack Simulation</span>
+  <div class="card">
+    <div class="label">Hostname</div>
+    <div class="value">{{ ansible_hostname }}</div>
+  </div>
+  <div class="card">
+    <div class="label">IP Address</div>
+    <div class="value">{{ ansible_host }}</div>
+  </div>
+  <div class="card">
+    <div class="label">S3 Bucket</div>
+    <div class="value">{{ s3_bucket | default('N/A') }}</div>
+  </div>
+  <div class="card">
+    <div class="label">DynamoDB Table</div>
+    <div class="value">{{ dynamodb_table | default('N/A') }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Configured At</div>
+    <div class="value">{{ ansible_date_time.iso8601 }}</div>
+  </div>
+  <p>Sample web app running inside Docker on port 8080 → proxied via <code>/app/</code></p>
+</body>
+</html>

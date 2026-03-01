@@ -1,0 +1,38 @@
+---
+- name: Configure DevOps Sandbox EC2 Instance
+  hosts: ec2_instances
+  become: yes
+  gather_facts: yes
+
+  vars_files:
+    - ../inventory/terraform_outputs.yml
+
+  pre_tasks:
+    - name: Display target host info
+      ansible.builtin.debug:
+        msg: "Configuring host: {{ inventory_hostname }} ({{ ansible_host }})"
+
+  roles:
+    - role: common
+      tags: [common, always]
+    - role: docker
+      tags: [docker]
+    - role: nginx
+      tags: [nginx, web]
+
+  post_tasks:
+    - name: Verify services are running
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - nginx
+        - docker
+
+    - name: Show deployment summary
+      ansible.builtin.debug:
+        msg:
+          - "✅ Deployment complete!"
+          - "Host: {{ ansible_host }}"
+          - "Nginx: http://{{ ansible_host }}:80"
