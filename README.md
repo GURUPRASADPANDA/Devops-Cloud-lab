@@ -1,4 +1,4 @@
-# 🚀 DevOps Sandbox
+#DevOps Cloud lab
 
 > **A production-grade local AWS DevOps Training Platform**  
 > Simulate real AWS workflows entirely on your laptop using LocalStack, Terraform, Ansible, and Docker.
