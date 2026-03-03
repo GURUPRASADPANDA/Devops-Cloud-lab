@@ -9,11 +9,10 @@ function NavItem({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-        active
-          ? "bg-blue-600 text-white"
-          : "text-gray-400 hover:text-white hover:bg-gray-700"
-      }`}
+      className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${active
+        ? "bg-blue-600 text-white"
+        : "text-gray-400 hover:text-white hover:bg-gray-700"
+        }`}
     >
       {label}
     </button>
@@ -52,9 +51,9 @@ export default function App() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🚀</span>
+          <span className="text-2xl"></span>
           <div>
-            <h1 className="text-lg font-bold text-blue-400">DevOps Sandbox</h1>
+            <h1 className="text-lg font-bold text-blue-400">DevOps Cloud Lab</h1>
             <p className="text-xs text-gray-400">Local AWS Training Platform</p>
           </div>
         </div>
