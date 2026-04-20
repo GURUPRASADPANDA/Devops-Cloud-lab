@@ -116,7 +116,7 @@ make install-cli
 make deploy
 ```
 
-That's it. The full pipeline runs automatically:
+That's it. The full pipeline runs automatically :
 1. Starts LocalStack + all containers
 2. Runs `terraform apply` to provision VPC, EC2, S3, DynamoDB, IAM
 3. Runs Ansible to configure the EC2 mock instance
